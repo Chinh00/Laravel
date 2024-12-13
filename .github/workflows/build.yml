@@ -31,10 +31,10 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
-      # Run Laravel tests
-      - name: Run Laravel tests
-        run: |
-          php artisan test
-
-      
+      # Analyze with SonarQube
+      - name: Run SonarQube scan
+        uses: sonarsource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
