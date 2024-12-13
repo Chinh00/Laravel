@@ -1,0 +1,45 @@
+﻿name: Build and Analyze
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build and Analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      # Clone repository
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Disable shallow clones for better analysis
+
+      # Set up PHP environment
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0.2
+          extensions: mbstring, bcmath, zip
+          ini-values: post_max_size=256M, max_execution_time=300
+
+      # Install Composer dependencies
+      - name: Install dependencies
+        run: |
+          composer install --no-progress --no-suggest
+          cp .env.example .env
+          php artisan key:generate
+
+      # Run Laravel tests
+      - name: Run Laravel tests
+        run: |
+          php artisan test
+
+      # Analyze with SonarQube
+      - name: Run SonarQube scan
+        uses: sonarsource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
